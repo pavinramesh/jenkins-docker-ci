@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  dind:
+    image: docker:24-dind
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    volumes:
+      - dind_storage:/var/lib/docker
+    ports:
+      - "2375:2375"   # Docker API (no TLS, OK for local learning)
+
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    user: root
+    depends_on:
+      - dind
+    ports:
+      - "8090:8080"   # Jenkins UI
+      - "50000:50000" # agent port (not used now)
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    environment:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=true"
+
+volumes:
+  jenkins_home:
+  dind_storage:
